@@ -60,16 +60,25 @@ app.get("/", async (_, res) => {
         const last = getLastRowCount();
 
         console.log(`[⏱️ CHECK] current: ${current}, last: ${last}`);
-        if (current > last) {
-            await sendTelegramMessage(`🆕 Có ${current - last} dòng mới được thêm vào Google Sheet!`);
-        }
-        saveRowCount(current);
 
+        if (current !== last) {
+            const diff = current - last;
+            if (diff > 0) {
+                await sendTelegramMessage(`🟢 Có **${diff} dòng mới** được thêm vào Google Sheet!`);
+            } else {
+                await sendTelegramMessage(`🗑️ Có **${Math.abs(diff)} dòng đã bị xóa** khỏi Google Sheet!`);
+            }
+        } else {
+            console.log("⚖️ Không có thay đổi về số dòng.");
+        }
+
+        saveRowCount(current);
         res.send("✅ Kiểm tra xong");
     } catch (e) {
         console.error("🚨 Lỗi:", e.message);
         res.status(500).send(`❌ Lỗi: ${e.message}`);
     }
 });
+
 
 app.listen(3000, () => console.log("🌐 Web server đang chạy tại cổng 3000"));
